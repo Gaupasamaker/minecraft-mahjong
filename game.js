@@ -332,6 +332,9 @@ class MahjongGame {
         this.moves = 0;
         this.isAnimating = false;
 
+        // Aplicar fondo temático
+        this.gameScreen.setAttribute('data-layout', layoutName);
+
         const layout = LAYOUTS[layoutName];
         this.generateBoard(layout);
         this.updateUI();

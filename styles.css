@@ -29,6 +29,45 @@
     --tile-matched: #00FF00;
 }
 
+/* ============================================
+   FONDOS TEMÁTICOS DE MAPAS
+   ============================================ */
+
+#game-screen {
+    position: relative;
+}
+
+#game-screen::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: brightness(0.3) blur(3px);
+    z-index: -1;
+    transition: background-image 0.5s ease;
+}
+
+#game-screen[data-layout="fortress"]::before {
+    background-image: url('assets/bg_fortress.png');
+}
+
+#game-screen[data-layout="pyramid"]::before {
+    background-image: url('assets/bg_nether.png');
+}
+
+#game-screen[data-layout="mine"]::before {
+    background-image: url('assets/bg_mine.png');
+}
+
+#game-screen[data-layout="portal"]::before {
+    background-image: url('assets/bg_end.png');
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -123,6 +162,7 @@ body::before {
 }
 
 .game-title {
+    font-family: 'minecrafter', 'VT323', monospace;
     font-size: 4rem;
     color: var(--grass-green);
     text-shadow:

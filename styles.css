@@ -153,41 +153,128 @@ body::before {
 }
 
 /* ============================================
-   MENÚ PRINCIPAL
+   MENÚ PRINCIPAL - REDISEÑO MINECRAFT
    ============================================ */
+
+/* Fondo del menú principal */
+#menu-screen {
+    position: relative;
+    overflow: hidden;
+}
+
+#menu-screen::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('assets/bg_home.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: -2;
+}
+
+#menu-screen::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(180deg,
+            rgba(0, 0, 0, 0.3) 0%,
+            rgba(0, 0, 0, 0.1) 40%,
+            rgba(0, 0, 0, 0.4) 100%);
+    z-index: -1;
+}
 
 .title-container {
     text-align: center;
-    margin-bottom: 40px;
+    margin-bottom: 50px;
+    padding: 30px 50px;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 12px;
+    border: 4px solid rgba(93, 140, 62, 0.5);
+    backdrop-filter: blur(5px);
+    box-shadow:
+        0 0 30px rgba(0, 0, 0, 0.5),
+        inset 0 0 20px rgba(93, 140, 62, 0.1);
 }
 
 .game-title {
     font-family: 'minecrafter', 'VT323', monospace;
-    font-size: 4rem;
-    color: var(--grass-green);
+    font-size: clamp(2.5rem, 8vw, 5rem);
+    color: #7CB454;
     text-shadow:
-        4px 4px 0 var(--dirt-brown),
-        8px 8px 0 rgba(0, 0, 0, 0.3);
-    letter-spacing: 4px;
-    animation: titleBounce 2s ease-in-out infinite;
+        /* Borde negro exterior */
+        -4px -4px 0 #2d4420,
+        4px -4px 0 #2d4420,
+        -4px 4px 0 #2d4420,
+        4px 4px 0 #2d4420,
+        /* Sombra 3D */
+        6px 6px 0 #1a2910,
+        /* Brillo superior */
+        0 -2px 0 #a8e87c;
+    letter-spacing: 6px;
+    animation: titleFloat 3s ease-in-out infinite;
+    position: relative;
+    display: inline-block;
 }
 
-@keyframes titleBounce {
+.game-title::before {
+    content: '⛏️';
+    position: absolute;
+    left: -60px;
+    top: 50%;
+    transform: translateY(-50%) rotate(-15deg);
+    font-size: 2.5rem;
+    animation: pickaxeSwing 2s ease-in-out infinite;
+}
+
+.game-title::after {
+    content: '⛏️';
+    position: absolute;
+    right: -60px;
+    top: 50%;
+    transform: translateY(-50%) rotate(15deg) scaleX(-1);
+    font-size: 2.5rem;
+    animation: pickaxeSwing 2s ease-in-out infinite reverse;
+}
+
+@keyframes titleFloat {
 
     0%,
     100% {
-        transform: translateY(0);
+        transform: translateY(0) scale(1);
     }
 
     50% {
-        transform: translateY(-10px);
+        transform: translateY(-8px) scale(1.02);
+    }
+}
+
+@keyframes pickaxeSwing {
+
+    0%,
+    100% {
+        transform: translateY(-50%) rotate(-15deg);
+    }
+
+    50% {
+        transform: translateY(-50%) rotate(-25deg);
     }
 }
 
 .subtitle {
-    font-size: 1.8rem;
-    color: var(--text-secondary);
-    margin-top: 15px;
+    font-size: clamp(1.4rem, 4vw, 2rem);
+    color: #FFD700;
+    margin-top: 20px;
+    text-shadow:
+        2px 2px 0 rgba(0, 0, 0, 0.8),
+        0 0 10px rgba(255, 215, 0, 0.3);
+    letter-spacing: 2px;
 }
 
 .board-selector {
@@ -671,66 +758,157 @@ body::before {
 }
 
 /* ============================================
-   SELECTOR DE MODO
+   SELECTOR DE MODO - ESTILO BLOQUES MINECRAFT
    ============================================ */
 
 .mode-selector {
-    display: flex;
-    gap: 30px;
-    margin-top: 20px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 25px;
+    margin-top: 30px;
+    max-width: 700px;
 }
 
 .mode-btn {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
-    padding: 40px 50px;
-    background: linear-gradient(180deg, var(--tile-bg) 0%, var(--tile-border) 100%);
-    border: 4px solid var(--tile-border);
-    border-radius: 12px;
+    justify-content: center;
+    gap: 12px;
+    padding: 30px 25px;
+    /* Aspecto de bloque de piedra */
+    background:
+        linear-gradient(135deg,
+            rgba(255, 255, 255, 0.15) 0%,
+            rgba(255, 255, 255, 0.05) 50%,
+            rgba(0, 0, 0, 0.1) 100%),
+        linear-gradient(180deg,
+            #6b6b6b 0%,
+            #505050 50%,
+            #3d3d3d 100%);
+    border: 5px solid;
+    border-color: #888 #444 #333 #666;
+    border-radius: 4px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.15s ease;
     box-shadow:
-        0 6px 0 var(--tile-shadow),
-        0 8px 10px rgba(0, 0, 0, 0.3);
+        /* Sombra 3D del bloque */
+        inset 0 2px 0 rgba(255, 255, 255, 0.3),
+        inset 0 -2px 0 rgba(0, 0, 0, 0.3),
+        0 8px 0 #1a1a1a,
+        0 10px 20px rgba(0, 0, 0, 0.5);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Patrón de textura pixelada */
+.mode-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image:
+        repeating-linear-gradient(0deg,
+            transparent 0px,
+            transparent 2px,
+            rgba(0, 0, 0, 0.03) 2px,
+            rgba(0, 0, 0, 0.03) 4px),
+        repeating-linear-gradient(90deg,
+            transparent 0px,
+            transparent 2px,
+            rgba(0, 0, 0, 0.03) 2px,
+            rgba(0, 0, 0, 0.03) 4px);
+    pointer-events: none;
+}
+
+/* Brillo en hover */
+.mode-btn::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.2) 50%,
+            transparent 100%);
+    transition: left 0.4s ease;
+    pointer-events: none;
+}
+
+.mode-btn:hover::after {
+    left: 100%;
 }
 
 .mode-btn:hover {
-    transform: translateY(-4px);
+    transform: translateY(-6px);
+    background:
+        linear-gradient(135deg,
+            rgba(255, 255, 255, 0.2) 0%,
+            rgba(255, 255, 255, 0.1) 50%,
+            rgba(0, 0, 0, 0.05) 100%),
+        linear-gradient(180deg,
+            #7a7a7a 0%,
+            #5f5f5f 50%,
+            #4a4a4a 100%);
     box-shadow:
-        0 10px 0 var(--tile-shadow),
-        0 12px 15px rgba(0, 0, 0, 0.4);
+        inset 0 2px 0 rgba(255, 255, 255, 0.4),
+        inset 0 -2px 0 rgba(0, 0, 0, 0.3),
+        0 12px 0 #1a1a1a,
+        0 16px 30px rgba(0, 0, 0, 0.6);
 }
 
 .mode-btn:active {
-    transform: translateY(2px);
+    transform: translateY(4px);
     box-shadow:
-        0 2px 0 var(--tile-shadow),
-        0 4px 5px rgba(0, 0, 0, 0.2);
+        inset 0 2px 0 rgba(255, 255, 255, 0.2),
+        inset 0 -2px 0 rgba(0, 0, 0, 0.4),
+        0 2px 0 #1a1a1a,
+        0 4px 10px rgba(0, 0, 0, 0.4);
 }
 
 .mode-icon {
-    font-size: 4rem;
+    font-size: 3.5rem;
+    filter: drop-shadow(3px 3px 2px rgba(0, 0, 0, 0.5));
+    transition: transform 0.2s ease;
+}
+
+.mode-btn:hover .mode-icon {
+    transform: scale(1.15) rotate(-5deg);
 }
 
 .mode-name {
-    font-family: 'VT323', monospace;
-    font-size: 1.8rem;
-    color: var(--text-primary);
+    font-family: 'minecrafter', 'VT323', monospace;
+    font-size: 1.6rem;
+    color: #fff;
+    text-shadow:
+        2px 2px 0 #000,
+        -1px -1px 0 #000,
+        1px -1px 0 #000,
+        -1px 1px 0 #000;
+    letter-spacing: 1px;
 }
 
 .mode-desc {
     font-family: 'VT323', monospace;
-    font-size: 1.2rem;
-    color: var(--text-secondary);
+    font-size: 1.1rem;
+    color: #ccc;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .section-title {
-    font-size: 2.5rem;
-    color: var(--grass-green);
-    text-shadow: 3px 3px 0 var(--dirt-brown);
-    margin-bottom: 10px;
+    font-family: 'minecrafter', 'VT323', monospace;
+    font-size: clamp(2rem, 5vw, 2.8rem);
+    color: #7CB454;
+    text-shadow:
+        3px 3px 0 #2d4420,
+        -2px -2px 0 #2d4420,
+        2px -2px 0 #2d4420,
+        -2px 2px 0 #2d4420;
+    margin-bottom: 15px;
 }
 
 /* ============================================
@@ -1099,18 +1277,47 @@ body::before {
 }
 
 @media (max-width: 768px) {
-    .game-title {
+
+    /* Título responsive */
+    .title-container {
+        padding: 20px 25px;
+        margin-bottom: 30px;
+    }
+
+    .game-title::before,
+    .game-title::after {
+        display: none;
+    }
+
+    /* Selector de modos en móvil - mantener grid 2x2 */
+    .mode-selector {
+        gap: 15px;
+        max-width: 100%;
+        padding: 0 10px;
+    }
+
+    .mode-btn {
+        padding: 20px 15px;
+        gap: 8px;
+    }
+
+    .mode-icon {
         font-size: 2.5rem;
     }
 
-    .board-selector,
-    .mode-selector {
-        flex-direction: column;
+    .mode-name {
+        font-size: 1.3rem;
+    }
+
+    .mode-desc {
+        font-size: 0.95rem;
+    }
+
+    .board-selector {
         gap: 15px;
     }
 
-    .board-btn,
-    .mode-btn {
+    .board-btn {
         padding: 20px 30px;
     }
 

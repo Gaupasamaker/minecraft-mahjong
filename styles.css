@@ -1074,22 +1074,55 @@ body::before {
         padding: 20px 30px;
     }
 
-    .tile {
-        width: 45px;
-        height: 56px;
-        font-size: 1.5rem;
+    /* Optimizar tablero para móvil */
+    .board-container {
+        flex: 1;
+        min-height: 60vh;
+        min-height: 60dvh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 5px;
+        overflow: visible;
     }
 
+    .board {
+        transform-origin: center center !important;
+    }
+
+    /* Header más compacto */
     .game-header,
     .competitive-header {
         flex-wrap: wrap;
-        gap: 10px;
+        gap: 8px;
+        padding: 8px 12px;
+        margin-bottom: 10px;
     }
 
     .game-info {
         order: -1;
         width: 100%;
         justify-content: center;
+        font-size: 1.2rem;
+        gap: 15px;
+    }
+
+    .pixel-btn {
+        font-size: 1rem;
+        padding: 8px 12px;
+    }
+
+    /* Game screen optimizado */
+    #game-screen {
+        padding: 5px;
+        min-height: auto;
+        height: 100dvh;
+    }
+
+    .tile {
+        width: 50px;
+        height: 62px;
+        font-size: 1.5rem;
     }
 
     .victory-buttons {
@@ -1104,6 +1137,40 @@ body::before {
     .center-area {
         flex-direction: column;
         gap: 10px;
+    }
+}
+
+/* Estilos adicionales para móviles muy pequeños */
+@media (max-width: 480px) {
+    .game-container {
+        padding: 4px;
+    }
+
+    .game-header,
+    .competitive-header {
+        padding: 6px 10px;
+        margin-bottom: 5px;
+    }
+
+    .game-info {
+        font-size: 1.1rem;
+        gap: 10px;
+    }
+
+    .pixel-btn {
+        font-size: 0.9rem;
+        padding: 6px 10px;
+    }
+
+    .board-container {
+        min-height: 65vh;
+        min-height: 65dvh;
+        padding: 2px;
+    }
+
+    .tile {
+        width: 45px;
+        height: 56px;
     }
 }
 

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mahjong Minecraft</title>
+    <meta name="description" content="Juego de Mahjong con temática de Minecraft - Solitario y Competitivo">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="game-container">
+        <!-- Pantalla de inicio - Selector de modo -->
+        <div id="menu-screen" class="screen active">
+            <div class="title-container">
+                <h1 class="game-title">⛏️ Mahjong Minecraft ⛏️</h1>
+                <p class="subtitle">Selecciona un modo de juego</p>
+            </div>
+            <div class="mode-selector">
+                <button class="mode-btn" data-mode="solitaire">
+                    <span class="mode-icon">🀄</span>
+                    <span class="mode-name">Solitario</span>
+                    <span class="mode-desc">Empareja fichas iguales</span>
+                </button>
+                <button class="mode-btn" data-mode="competitive">
+                    <span class="mode-icon">⚔️</span>
+                    <span class="mode-name">vs Bot</span>
+                    <span class="mode-desc">Mahjong competitivo</span>
+                </button>
+                <button class="mode-btn" data-mode="battle">
+                    <span class="mode-icon">🏰</span>
+                    <span class="mode-name">Battle</span>
+                    <span class="mode-desc">Carrera de palos</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Pantalla de selección de tablero (Solitario) -->
+        <div id="solitaire-menu" class="screen">
+            <div class="title-container">
+                <h2 class="section-title">🀄 Modo Solitario</h2>
+                <p class="subtitle">Selecciona un tablero</p>
+            </div>
+            <div class="board-selector">
+                <button class="board-btn" data-layout="fortress">
+                    <span class="board-icon">🏰</span>
+                    <span class="board-name">Fortaleza</span>
+                </button>
+                <button class="board-btn" data-layout="pyramid">
+                    <span class="board-icon">🔺</span>
+                    <span class="board-name">Pirámide del Nether</span>
+                </button>
+                <button class="board-btn" data-layout="mine">
+                    <span class="board-icon">⛏️</span>
+                    <span class="board-name">Cueva de Minas</span>
+                </button>
+                <button class="board-btn" data-layout="portal">
+                    <span class="board-icon">🌀</span>
+                    <span class="board-name">Portal del End</span>
+                </button>
+            </div>
+            <button id="back-to-menu" class="pixel-btn" style="margin-top: 20px;">← Volver</button>
+        </div>
+
+        <!-- Pantalla de juego Solitario -->
+        <div id="game-screen" class="screen">
+            <div class="game-header">
+                <button id="back-btn" class="pixel-btn">← Menú</button>
+                <div class="game-info">
+                    <span id="pairs-left">Parejas: 0</span>
+                    <span id="moves-count">Movimientos: 0</span>
+                </div>
+                <button id="shuffle-btn" class="pixel-btn">🔀 Mezclar</button>
+            </div>
+            <div id="board-container" class="board-container">
+                <!-- Las fichas se generan dinámicamente -->
+            </div>
+        </div>
+
+        <!-- Pantalla de juego Competitivo -->
+        <div id="competitive-screen" class="screen">
+            <div class="competitive-header">
+                <button id="competitive-back-btn" class="pixel-btn">← Menú</button>
+                <div class="turn-indicator">
+                    <span id="current-turn">Tu turno</span>
+                </div>
+                <div class="header-right">
+                    <span id="wall-count">Muro: 0</span>
+                    <button id="help-btn" class="pixel-btn help-btn">❓ Reglas</button>
+                </div>
+            </div>
+
+            <!-- Zona del Bot -->
+            <div class="player-area bot-area">
+                <div class="player-label">🤖 Bot</div>
+                <div id="bot-hand" class="hand bot-hand">
+                    <!-- Fichas del bot (ocultas) -->
+                </div>
+                <div id="bot-melds" class="melds">
+                    <!-- Combinaciones del bot -->
+                </div>
+            </div>
+
+            <!-- Zona central -->
+            <div class="center-area">
+                <div id="wall" class="wall">
+                    <!-- Muro de fichas -->
+                </div>
+                <div id="discards" class="discards">
+                    <!-- Fichas descartadas -->
+                </div>
+            </div>
+
+            <!-- Zona del Jugador -->
+            <div class="player-area human-area">
+                <div id="player-melds" class="melds">
+                    <!-- Combinaciones del jugador -->
+                </div>
+                <div id="player-hand" class="hand player-hand">
+                    <!-- Fichas del jugador -->
+                </div>
+                <div class="player-label">👤 Tú</div>
+            </div>
+
+            <!-- Botones de acción -->
+            <div id="action-buttons" class="action-buttons">
+                <button id="draw-btn" class="pixel-btn action-btn">📥 Robar</button>
+                <button id="mahjong-btn" class="pixel-btn action-btn" disabled>🀄 ¡Mahjong!</button>
+            </div>
+        </div>
+
+        <!-- Pantalla de victoria Solitario -->
+        <div id="victory-screen" class="screen">
+            <div class="victory-content">
+                <h2 class="victory-title">🎉 ¡Victoria! 🎉</h2>
+                <p class="victory-stats">Completaste el tablero en <span id="final-moves">0</span> movimientos</p>
+                <div class="victory-buttons">
+                    <button id="play-again-btn" class="pixel-btn large">🔄 Jugar de nuevo</button>
+                    <button id="menu-btn" class="pixel-btn large">🏠 Menú principal</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pantalla de victoria/derrota Competitivo -->
+        <div id="competitive-end-screen" class="screen">
+            <div class="victory-content">
+                <h2 id="competitive-result-title" class="victory-title">🎉 ¡Victoria! 🎉</h2>
+                <p id="competitive-result-text" class="victory-stats">¡Has ganado la partida!</p>
+                <div class="victory-buttons">
+                    <button id="competitive-play-again-btn" class="pixel-btn large">🔄 Jugar de nuevo</button>
+                    <button id="competitive-menu-btn" class="pixel-btn large">🏠 Menú principal</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pantalla de juego Battle -->
+        <div id="battle-screen" class="screen">
+            <div class="battle-header">
+                <button id="battle-back-btn" class="pixel-btn">← Menú</button>
+                <div class="turn-indicator">
+                    <span id="battle-turn">Tu turno</span>
+                </div>
+                <div class="header-right">
+                    <span id="battle-score">Tú: 0 | Bot: 0</span>
+                    <button id="battle-help-btn" class="pixel-btn help-btn">❓ Reglas</button>
+                </div>
+            </div>
+
+            <!-- Cuadrícula del Bot (4x6) -->
+            <div class="battle-area bot-battle-area">
+                <div class="battle-label">🤖 Bot <span class="suit-label" id="bot-suit-label">(Mobs)</span></div>
+                <div id="bot-grid" class="battle-grid">
+                    <!-- 24 fichas generadas dinámicamente -->
+                </div>
+            </div>
+
+            <!-- Zona central de intercambio -->
+            <div class="battle-center">
+                <div id="transfer-zone" class="transfer-zone">
+                    <span class="transfer-text">⬆️ Fichas intercambiadas ⬇️</span>
+                </div>
+            </div>
+
+            <!-- Cuadrícula del Jugador (4x6) -->
+            <div class="battle-area player-battle-area">
+                <div id="player-grid" class="battle-grid">
+                    <!-- 24 fichas generadas dinámicamente -->
+                </div>
+                <div class="battle-label">👤 Tú <span class="suit-label" id="player-suit-label">(Items)</span></div>
+            </div>
+        </div>
+
+        <!-- Pantalla de victoria/derrota Battle -->
+        <div id="battle-end-screen" class="screen">
+            <div class="victory-content">
+                <h2 id="battle-result-title" class="victory-title">🎉 ¡Victoria! 🎉</h2>
+                <p id="battle-result-text" class="victory-stats">¡Has completado tu palo primero!</p>
+                <div class="victory-buttons">
+                    <button id="battle-play-again-btn" class="pixel-btn large">🔄 Jugar de nuevo</button>
+                    <button id="battle-menu-btn" class="pixel-btn large">🏠 Menú principal</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de Ayuda/Reglas -->
+        <div id="help-modal" class="modal-overlay">
+            <div class="modal-content">
+                <button id="close-help-btn" class="close-btn">✕</button>
+                <h2 class="modal-title">📜 Reglas del Mahjong Competitivo</h2>
+
+                <div class="rules-section">
+                    <h3>🎯 Objetivo</h3>
+                    <p>Conseguir <strong>Mahjong</strong> formando: <strong>2 tríos</strong> (3 fichas iguales) +
+                        <strong>1 pareja</strong> (2 fichas iguales) = 8 fichas.
+                    </p>
+                </div>
+
+                <div class="rules-section">
+                    <h3>🎮 Cómo jugar</h3>
+                    <ol>
+                        <li><strong>Robar:</strong> Pulsa el botón "📥 Robar" para coger una ficha del muro.</li>
+                        <li><strong>Descartar:</strong> Haz clic en una ficha de tu mano para seleccionarla, y vuelve a
+                            hacer clic para descartarla.</li>
+                        <li><strong>¡Mahjong!:</strong> Cuando tengas la combinación ganadora, pulsa "🀄 ¡Mahjong!"</li>
+                    </ol>
+                </div>
+
+                <div class="rules-section">
+                    <h3>📋 Turnos</h3>
+                    <ul>
+                        <li>Cada turno: robas 1 ficha → descartas 1 ficha</li>
+                        <li>Después de descartar, es el turno del Bot</li>
+                        <li>El juego termina cuando alguien consigue Mahjong o se acaban las fichas</li>
+                    </ul>
+                </div>
+
+                <div class="rules-section tips">
+                    <h3>💡 Consejos</h3>
+                    <p>Intenta juntar fichas del mismo tipo. ¡Descarta las fichas solitarias que no te sirven!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de Ayuda Battle -->
+        <div id="battle-help-modal" class="modal-overlay">
+            <div class="modal-content">
+                <button id="close-battle-help-btn" class="close-btn">✕</button>
+                <h2 class="modal-title">🏰 Reglas del Battle Mahjong</h2>
+
+                <div class="rules-section">
+                    <h3>🎯 Objetivo</h3>
+                    <p>Completa tu cuadrícula con las <strong>24 fichas de tu palo</strong> antes que el Bot.</p>
+                </div>
+
+                <div class="rules-section">
+                    <h3>🎮 Cómo jugar</h3>
+                    <ol>
+                        <li><strong>Revelar:</strong> Haz clic en una ficha boca abajo de tu cuadrícula.</li>
+                        <li><strong>Tu palo:</strong> Si la ficha es de tu palo, se queda boca arriba.</li>
+                        <li><strong>Palo rival:</strong> Si es del palo del Bot, se transfiere a su cuadrícula.</li>
+                    </ol>
+                </div>
+
+                <div class="rules-section">
+                    <h3>🃏 Palos</h3>
+                    <ul>
+                        <li><strong>🟢 Mobs:</strong> Creeper, Zombie, Skeleton, Pig, Panda, Ender Dragon</li>
+                        <li><strong>🔵 Items:</strong> Steve, Alex, Diamond Sword, Diamond Pickaxe, TNT, Villager</li>
+                    </ul>
+                </div>
+
+                <div class="rules-section tips">
+                    <h3>💡 Consejo</h3>
+                    <p>El primero en tener las 24 fichas de su palo reveladas gana. ¡Es una carrera!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+
+</html>

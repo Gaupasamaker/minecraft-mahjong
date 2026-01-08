@@ -445,23 +445,36 @@ class MahjongGame {
         // Función para calcular y aplicar la escala
         const applyScale = () => {
             const container = this.boardContainer;
-            // En móvil, usar más espacio disponible
+            const containerWidth = container.clientWidth - 10;
+            const containerHeight = container.clientHeight - 10;
+
+            // Detectar modo retrato en móvil
+            const isPortrait = window.innerHeight > window.innerWidth;
             const isMobile = window.innerWidth <= 768;
-            const padding = isMobile ? 10 : 20;
+            const isBoardWiderThanTall = boardWidth > boardHeight;
 
-            const containerWidth = container.clientWidth - padding;
-            const containerHeight = container.clientHeight - padding;
+            // Rotar el tablero si estamos en modo retrato y el tablero es más ancho que alto
+            const shouldRotate = isMobile && isPortrait && isBoardWiderThanTall;
 
-            const scaleX = containerWidth / boardWidth;
-            const scaleY = containerHeight / boardHeight;
+            let scaleX, scaleY, scale;
 
-            // En móvil permitimos escalar sin límite máximo para aprovechar espacio
-            // En desktop mantenemos escala máxima 1.2 para no pixelar
-            const maxScale = isMobile ? 1.5 : 1.2;
-            const scale = Math.min(scaleX, scaleY, maxScale);
+            if (shouldRotate) {
+                // En modo rotado, intercambiamos las dimensiones para calcular la escala
+                scaleX = containerWidth / boardHeight;
+                scaleY = containerHeight / boardWidth;
+                scale = Math.min(scaleX, scaleY, 1.3);
 
-            board.style.transform = `scale(${scale})`;
-            board.style.transformOrigin = 'center center';
+                board.style.transform = `rotate(90deg) scale(${scale})`;
+                board.style.transformOrigin = 'center center';
+            } else {
+                scaleX = containerWidth / boardWidth;
+                scaleY = containerHeight / boardHeight;
+                const maxScale = isMobile ? 1.5 : 1.2;
+                scale = Math.min(scaleX, scaleY, maxScale);
+
+                board.style.transform = `scale(${scale})`;
+                board.style.transformOrigin = 'center center';
+            }
         };
 
         // Aplicar escala inicial con pequeño delay
@@ -469,10 +482,10 @@ class MahjongGame {
         // Reaplicar después de que todo cargue
         setTimeout(applyScale, 300);
 
-        // Re-escalar al cambiar tamaño de ventana
-        const resizeHandler = () => applyScale();
+        // Re-escalar al cambiar tamaño de ventana u orientación
+        const resizeHandler = () => setTimeout(applyScale, 50);
         window.addEventListener('resize', resizeHandler);
-        window.addEventListener('orientationchange', () => setTimeout(applyScale, 100));
+        window.addEventListener('orientationchange', () => setTimeout(applyScale, 150));
 
         // Guardar referencia para poder limpiar el listener después
         board._resizeHandler = resizeHandler;

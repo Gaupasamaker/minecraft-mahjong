@@ -36,6 +36,11 @@
                     <span class="mode-name">Battle</span>
                     <span class="mode-desc">Carrera de palos</span>
                 </button>
+                <button class="mode-btn" data-mode="memory">
+                    <span class="mode-icon">🧠</span>
+                    <span class="mode-name">Memory</span>
+                    <span class="mode-desc">Trabaja tu memoria</span>
+                </button>
             </div>
         </div>
 
@@ -202,6 +207,60 @@
                 <div class="victory-buttons">
                     <button id="battle-play-again-btn" class="pixel-btn large">🔄 Jugar de nuevo</button>
                     <button id="battle-menu-btn" class="pixel-btn large">🏠 Menú principal</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pantalla de selección de dificultad Memory -->
+        <div id="memory-menu" class="screen">
+            <div class="title-container">
+                <h2 class="section-title">🧠 Modo Memory</h2>
+                <p class="subtitle">Selecciona la dificultad</p>
+            </div>
+            <div class="difficulty-selector">
+                <button class="difficulty-btn" data-difficulty="easy">
+                    <span class="difficulty-icon">🟢</span>
+                    <span class="difficulty-name">Fácil</span>
+                    <span class="difficulty-desc">4 parejas (8 fichas)</span>
+                </button>
+                <button class="difficulty-btn" data-difficulty="normal">
+                    <span class="difficulty-icon">🟡</span>
+                    <span class="difficulty-name">Normal</span>
+                    <span class="difficulty-desc">8 parejas (16 fichas)</span>
+                </button>
+                <button class="difficulty-btn" data-difficulty="hard">
+                    <span class="difficulty-icon">🔴</span>
+                    <span class="difficulty-name">Difícil</span>
+                    <span class="difficulty-desc">12 parejas (24 fichas)</span>
+                </button>
+            </div>
+            <button id="memory-back-to-menu" class="pixel-btn" style="margin-top: 20px;">← Volver</button>
+        </div>
+
+        <!-- Pantalla de juego Memory -->
+        <div id="memory-screen" class="screen">
+            <div class="game-header">
+                <button id="memory-back-btn" class="pixel-btn">← Menú</button>
+                <div class="game-info">
+                    <span id="memory-pairs-left">Parejas: 0</span>
+                    <span id="memory-attempts">Intentos: 0</span>
+                </div>
+                <button id="memory-restart-btn" class="pixel-btn">🔄 Reiniciar</button>
+            </div>
+            <div id="memory-grid" class="memory-grid">
+                <!-- Las fichas se generan dinámicamente -->
+            </div>
+        </div>
+
+        <!-- Pantalla de victoria Memory -->
+        <div id="memory-end-screen" class="screen">
+            <div class="victory-content">
+                <h2 class="victory-title">🎉 ¡Excelente! 🎉</h2>
+                <p class="victory-stats">¡Encontraste todas las parejas!</p>
+                <p class="victory-stats">Intentos: <span id="memory-final-attempts">0</span></p>
+                <div class="victory-buttons">
+                    <button id="memory-play-again-btn" class="pixel-btn large">🔄 Jugar de nuevo</button>
+                    <button id="memory-menu-btn" class="pixel-btn large">🏠 Menú principal</button>
                 </div>
             </div>
         </div>

@@ -1688,6 +1688,230 @@ class BattleGame {
 }
 
 /* ============================================
+   MODO MEMORY - JUEGO DE MEMORIA
+   ============================================ */
+
+class MemoryGame {
+    constructor() {
+        this.memoryScreen = document.getElementById('memory-screen');
+        this.memoryMenu = document.getElementById('memory-menu');
+        this.memoryEndScreen = document.getElementById('memory-end-screen');
+        this.memoryGrid = document.getElementById('memory-grid');
+        this.pairsLeftDisplay = document.getElementById('memory-pairs-left');
+        this.attemptsDisplay = document.getElementById('memory-attempts');
+        this.finalAttemptsDisplay = document.getElementById('memory-final-attempts');
+
+        this.tiles = [];
+        this.flippedTiles = [];
+        this.matchedPairs = 0;
+        this.totalPairs = 0;
+        this.attempts = 0;
+        this.isLocked = false;
+        this.currentDifficulty = 'easy';
+
+        this.init();
+    }
+
+    init() {
+        // Selector de dificultad
+        document.querySelectorAll('.difficulty-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const difficulty = btn.dataset.difficulty;
+                this.startGame(difficulty);
+            });
+        });
+
+        // Botón volver al menú principal
+        document.getElementById('memory-back-to-menu').addEventListener('click', () => {
+            this.showScreen('menu');
+        });
+
+        // Botón volver durante el juego
+        document.getElementById('memory-back-btn').addEventListener('click', () => {
+            this.showScreen('menu');
+        });
+
+        // Botón reiniciar
+        document.getElementById('memory-restart-btn').addEventListener('click', () => {
+            this.startGame(this.currentDifficulty);
+        });
+
+        // Botones de victoria
+        document.getElementById('memory-play-again-btn').addEventListener('click', () => {
+            this.startGame(this.currentDifficulty);
+        });
+
+        document.getElementById('memory-menu-btn').addEventListener('click', () => {
+            this.showScreen('menu');
+        });
+    }
+
+    showScreen(screen) {
+        // Ocultar todas las pantallas
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+
+        switch (screen) {
+            case 'menu':
+                document.getElementById('menu-screen').classList.add('active');
+                break;
+            case 'memory-menu':
+                this.memoryMenu.classList.add('active');
+                break;
+            case 'game':
+                this.memoryScreen.classList.add('active');
+                break;
+            case 'victory':
+                this.memoryEndScreen.classList.add('active');
+                break;
+        }
+    }
+
+    startGame(difficulty) {
+        this.currentDifficulty = difficulty;
+        this.tiles = [];
+        this.flippedTiles = [];
+        this.matchedPairs = 0;
+        this.attempts = 0;
+        this.isLocked = false;
+
+        // Determinar número de parejas según dificultad
+        const pairCounts = {
+            easy: 4,
+            normal: 8,
+            hard: 12
+        };
+
+        this.totalPairs = pairCounts[difficulty];
+        this.generateGrid();
+        this.updateUI();
+        this.showScreen('game');
+    }
+
+    generateGrid() {
+        this.memoryGrid.innerHTML = '';
+        this.memoryGrid.className = `memory-grid ${this.currentDifficulty}`;
+
+        // Obtener tipos de fichas a usar
+        const numPairs = this.totalPairs;
+        const availableTypes = TILE_TYPES.slice(0, numPairs);
+
+        // Crear parejas
+        let tileTypes = [];
+        availableTypes.forEach(type => {
+            tileTypes.push(type);
+            tileTypes.push(type);
+        });
+
+        // Mezclar
+        tileTypes = this.shuffle(tileTypes);
+
+        // Crear fichas
+        tileTypes.forEach((tileType, index) => {
+            const tile = document.createElement('div');
+            tile.className = 'memory-tile';
+            tile.dataset.id = index;
+            tile.dataset.typeId = tileType.id;
+            tile.innerHTML = `
+                <div class="memory-tile-inner">
+                    <div class="memory-tile-face memory-tile-back"></div>
+                    <div class="memory-tile-face memory-tile-front">
+                        <img src="${tileType.image}" alt="${tileType.name}" draggable="false">
+                    </div>
+                </div>
+            `;
+
+            tile.addEventListener('click', () => this.handleTileClick(tile));
+
+            this.memoryGrid.appendChild(tile);
+            this.tiles.push({
+                element: tile,
+                id: index,
+                typeId: tileType.id,
+                matched: false
+            });
+        });
+    }
+
+    shuffle(array) {
+        const shuffled = [...array];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
+    }
+
+    handleTileClick(tileElement) {
+        if (this.isLocked) return;
+
+        const tile = this.tiles.find(t => t.element === tileElement);
+        if (!tile || tile.matched) return;
+
+        // No permitir voltear la misma ficha
+        if (this.flippedTiles.includes(tile)) return;
+
+        // Voltear ficha
+        soundManager.play('reveal');
+        tileElement.classList.add('revealed');
+        this.flippedTiles.push(tile);
+
+        // Si hay 2 fichas volteadas, verificar match
+        if (this.flippedTiles.length === 2) {
+            this.attempts++;
+            this.updateUI();
+            this.checkMatch();
+        }
+    }
+
+    checkMatch() {
+        this.isLocked = true;
+        const [tile1, tile2] = this.flippedTiles;
+
+        if (tile1.typeId === tile2.typeId) {
+            // ¡Match!
+            soundManager.play('match');
+            tile1.matched = true;
+            tile2.matched = true;
+            tile1.element.classList.add('matched');
+            tile2.element.classList.add('matched');
+            this.matchedPairs++;
+            this.flippedTiles = [];
+            this.isLocked = false;
+            this.updateUI();
+
+            // Verificar victoria
+            if (this.matchedPairs >= this.totalPairs) {
+                setTimeout(() => this.showVictory(), 500);
+            }
+        } else {
+            // No match
+            soundManager.play('wrong');
+            tile1.element.classList.add('wrong');
+            tile2.element.classList.add('wrong');
+
+            setTimeout(() => {
+                tile1.element.classList.remove('revealed', 'wrong');
+                tile2.element.classList.remove('revealed', 'wrong');
+                this.flippedTiles = [];
+                this.isLocked = false;
+            }, 1200);
+        }
+    }
+
+    updateUI() {
+        const remaining = this.totalPairs - this.matchedPairs;
+        this.pairsLeftDisplay.textContent = `Parejas: ${remaining}`;
+        this.attemptsDisplay.textContent = `Intentos: ${this.attempts}`;
+    }
+
+    showVictory() {
+        soundManager.play('victory');
+        this.finalAttemptsDisplay.textContent = this.attempts;
+        this.showScreen('victory');
+    }
+}
+
+/* ============================================
    CONTROLADOR PRINCIPAL
    ============================================ */
 
@@ -1696,6 +1920,7 @@ class GameController {
         this.solitaireGame = null;
         this.traditionalGame = null;
         this.battleGame = null;
+        this.memoryGame = null; // Added
         this.init();
     }
 
@@ -1710,6 +1935,8 @@ class GameController {
                     this.startCompetitive();
                 } else if (mode === 'battle') {
                     this.startBattle();
+                } else if (mode === 'memory') { // Added
+                    this.showMemoryMenu(); // Added
                 }
             });
         });
@@ -1724,11 +1951,17 @@ class GameController {
         this.solitaireGame = new MahjongGame();
         this.traditionalGame = new TraditionalGame();
         this.battleGame = new BattleGame();
+        this.memoryGame = new MemoryGame(); // Added
     }
 
     showSolitaireMenu() {
         document.getElementById('menu-screen').classList.remove('active');
         document.getElementById('solitaire-menu').classList.add('active');
+    }
+
+    showMemoryMenu() { // Added
+        document.getElementById('menu-screen').classList.remove('active');
+        document.getElementById('memory-menu').classList.add('active');
     }
 
     startCompetitive() {

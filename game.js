@@ -113,19 +113,20 @@ class SoundManager {
 const soundManager = new SoundManager();
 
 // Tipos de fichas con imágenes personalizadas de Minecraft (12 tipos)
+// Fichas especiales tienen mecánicas únicas en modo Solitario
 const TILE_TYPES = [
     { id: 'villager', image: 'assets/villager.png', name: 'Aldeano' },
     { id: 'alex', image: 'assets/alex.png', name: 'Alex' },
-    { id: 'pig', image: 'assets/pig.png', name: 'Cerdo' },
-    { id: 'creeper', image: 'assets/creeper.png', name: 'Creeper' },
-    { id: 'ender_dragon', image: 'assets/ender_dragon.png', name: 'Ender Dragon' },
+    { id: 'pig', image: 'assets/pig.png', name: 'Cerdo', special: 'sniff' },
+    { id: 'creeper', image: 'assets/creeper.png', name: 'Creeper', special: 'explosive', timerSeconds: 10 },
+    { id: 'ender_dragon', image: 'assets/ender_dragon.png', name: 'Ender Dragon', special: 'wildcard' },
     { id: 'skeleton', image: 'assets/skeleton.png', name: 'Esqueleto' },
     { id: 'panda', image: 'assets/panda.png', name: 'Panda' },
     { id: 'diamond_pickaxe', image: 'assets/diamond_pickaxe.png', name: 'Pico de Diamante' },
     { id: 'steve', image: 'assets/steve.png', name: 'Steve' },
-    { id: 'zombie', image: 'assets/zombie.png', name: 'Zombie' },
-    { id: 'tnt', image: 'assets/tnt.png', name: 'TNT' },
-    { id: 'diamond_sword', image: 'assets/diamond_sword.png', name: 'Espada de Diamante' }
+    { id: 'zombie', image: 'assets/zombie.png', name: 'Zombie', special: 'moving' },
+    { id: 'tnt', image: 'assets/tnt.png', name: 'TNT', special: 'combo', extraTiles: 2 },
+    { id: 'diamond_sword', image: 'assets/diamond_sword.png', name: 'Espada de Diamante', special: 'cutting', charges: 3 }
 ];
 
 // Layouts de tableros
@@ -261,6 +262,13 @@ class MahjongGame {
         this.pairs = 0;
         this.currentLayout = null;
         this.isAnimating = false;
+
+        // Mecánicas especiales
+        this.creeperTimer = null;
+        this.creeperTimerValue = 0;
+        this.creeperTimerElement = null;
+        this.cuttingCharges = 0;
+        this.comboCount = 0;
 
         this.init();
     }
@@ -493,12 +501,25 @@ class MahjongGame {
         if (this.selectedTile === null) {
             // Primera ficha seleccionada
             this.selectedTile = tile;
+
+            // Activar mecánica especial si aplica
+            this.handleSpecialTile(tile);
         } else {
             // Segunda ficha seleccionada
             this.moves++;
             this.updateUI();
 
-            if (this.selectedTile.typeId === tile.typeId) {
+            // Cancelar timer del Creeper si se encuentra pareja
+            if (this.creeperTimer) {
+                this.clearCreeperTimer();
+            }
+
+            // Verificar match (incluyendo comodín Ender Dragon)
+            const tileType1 = TILE_TYPES[this.selectedTile.typeId];
+            const tileType2 = TILE_TYPES[tile.typeId];
+            const isWildcard = tileType1.special === 'wildcard' || tileType2.special === 'wildcard';
+
+            if (this.selectedTile.typeId === tile.typeId || isWildcard) {
                 // ¡Match!
                 this.matchTiles(this.selectedTile, tile);
             } else {
@@ -517,7 +538,10 @@ class MahjongGame {
         this.isAnimating = true;
         soundManager.play('match');
 
-        tile1.element.classList.remove('selected');
+        // Limpiar timer del Creeper si existe
+        this.clearCreeperTimer();
+
+        tile1.element.classList.remove('selected', 'vibrating');
         tile2.element.classList.remove('selected');
         tile1.element.classList.add('matched');
         tile2.element.classList.add('matched');
@@ -525,6 +549,10 @@ class MahjongGame {
         tile1.matched = true;
         tile2.matched = true;
         this.pairs--;
+
+        // Verificar si es TNT para activar combo
+        const isTNT = TILE_TYPES[tile1.typeId].special === 'combo' ||
+            TILE_TYPES[tile2.typeId].special === 'combo';
 
         setTimeout(() => {
             tile1.element.style.visibility = 'hidden';
@@ -534,9 +562,14 @@ class MahjongGame {
             this.updateBlockedTiles();
             this.updateUI();
 
+            // Activar combo TNT después del match
+            if (isTNT) {
+                setTimeout(() => this.triggerTNTCombo(), 300);
+            }
+
             // Verificar victoria
-            if (this.pairs === 0) {
-                setTimeout(() => this.showVictory(), 300);
+            if (this.pairs <= 0) {
+                setTimeout(() => this.showVictory(), 500);
             }
         }, 500);
     }
@@ -626,6 +659,212 @@ class MahjongGame {
     updateUI() {
         this.pairsLeft.textContent = `Parejas: ${this.pairs}`;
         this.movesCount.textContent = `Movimientos: ${this.moves}`;
+    }
+
+    // ============================================
+    // MECÁNICAS ESPECIALES
+    // ============================================
+
+    handleSpecialTile(tile) {
+        const tileType = TILE_TYPES[tile.typeId];
+        if (!tileType.special) return;
+
+        switch (tileType.special) {
+            case 'explosive':
+                this.startCreeperTimer(tile);
+                break;
+            case 'sniff':
+                this.showPairHint(tile);
+                break;
+            case 'moving':
+                this.moveZombie(tile);
+                break;
+            case 'cutting':
+                // La espada activa el modo corte
+                this.cuttingCharges = tileType.charges || 3;
+                this.showMessage('⚔️ ¡Modo Corte! ' + this.cuttingCharges + ' fichas ignoran bloqueos');
+                break;
+        }
+    }
+
+    startCreeperTimer(tile) {
+        const tileType = TILE_TYPES[tile.typeId];
+        this.creeperTimerValue = tileType.timerSeconds || 10;
+
+        // Crear elemento del timer
+        this.creeperTimerElement = document.createElement('div');
+        this.creeperTimerElement.className = 'creeper-timer';
+        this.creeperTimerElement.innerHTML = `<span class="timer-value">${this.creeperTimerValue}</span>`;
+        tile.element.appendChild(this.creeperTimerElement);
+
+        // Añadir vibración
+        tile.element.classList.add('vibrating');
+
+        // Sonido de tick
+        soundManager.play('select');
+
+        // Iniciar cuenta atrás
+        this.creeperTimer = setInterval(() => {
+            this.creeperTimerValue--;
+            if (this.creeperTimerElement) {
+                this.creeperTimerElement.querySelector('.timer-value').textContent = this.creeperTimerValue;
+            }
+
+            if (this.creeperTimerValue <= 3) {
+                soundManager.play('wrong');
+            }
+
+            if (this.creeperTimerValue <= 0) {
+                this.explodeCreeper(tile);
+            }
+        }, 1000);
+    }
+
+    clearCreeperTimer() {
+        if (this.creeperTimer) {
+            clearInterval(this.creeperTimer);
+            this.creeperTimer = null;
+        }
+
+        if (this.selectedTile && this.selectedTile.element) {
+            this.selectedTile.element.classList.remove('vibrating');
+            const timerEl = this.selectedTile.element.querySelector('.creeper-timer');
+            if (timerEl) timerEl.remove();
+        }
+
+        this.creeperTimerElement = null;
+    }
+
+    explodeCreeper(tile) {
+        this.clearCreeperTimer();
+
+        // Sonido de explosión
+        soundManager.play('transfer');
+
+        // Animación de explosión
+        tile.element.classList.remove('selected', 'vibrating');
+        tile.element.classList.add('exploding');
+
+        // Eliminar fichas cercanas (penalización)
+        const neighbors = this.getNeighborTiles(tile);
+        neighbors.slice(0, 2).forEach(neighbor => {
+            if (!neighbor.matched) {
+                neighbor.element.classList.add('exploding');
+                setTimeout(() => {
+                    neighbor.matched = true;
+                    neighbor.element.style.visibility = 'hidden';
+                }, 500);
+            }
+        });
+
+        // El creeper también desaparece
+        setTimeout(() => {
+            tile.matched = true;
+            tile.element.style.visibility = 'hidden';
+            this.selectedTile = null;
+            this.pairs -= Math.min(2, neighbors.length) + 1;
+            this.updateBlockedTiles();
+            this.updateUI();
+            this.showMessage('💥 ¡BOOM! Creeper explotó');
+        }, 600);
+    }
+
+    getNeighborTiles(tile) {
+        return this.tiles.filter(t => {
+            if (t === tile || t.matched) return false;
+            const dx = Math.abs(t.col - tile.col);
+            const dy = Math.abs(t.row - tile.row);
+            return dx <= 2 && dy <= 2 && t.z === tile.z;
+        });
+    }
+
+    showPairHint(tile) {
+        // Encontrar la pareja del cerdo
+        const pair = this.tiles.find(t =>
+            t !== tile &&
+            t.typeId === tile.typeId &&
+            !t.matched
+        );
+
+        if (pair) {
+            // Mostrar brevemente dónde está
+            pair.element.classList.add('hint-glow');
+            soundManager.play('reveal');
+
+            setTimeout(() => {
+                pair.element.classList.remove('hint-glow');
+            }, 2000);
+
+            this.showMessage('🐷 ¡El cerdo olfatea su pareja!');
+        }
+    }
+
+    moveZombie(tile) {
+        // El zombie se mueve lentamente a otra posición
+        const availablePositions = this.tiles
+            .filter(t => t.matched && t.z === tile.z)
+            .slice(0, 1);
+
+        if (availablePositions.length > 0) {
+            const newPos = availablePositions[0];
+
+            // Animación de movimiento
+            tile.element.style.transition = 'left 1s, top 1s';
+            tile.element.style.left = newPos.element.style.left;
+            tile.element.style.top = newPos.element.style.top;
+
+            // Actualizar posición lógica
+            tile.col = newPos.col;
+            tile.row = newPos.row;
+
+            this.showMessage('🧟 ¡El zombie se mueve!');
+
+            setTimeout(() => {
+                tile.element.style.transition = '';
+                this.updateBlockedTiles();
+            }, 1000);
+        }
+    }
+
+    triggerTNTCombo() {
+        // Eliminar 2 fichas aleatorias adicionales
+        const availableTiles = this.tiles.filter(t => !t.matched && !this.isTileBlocked(t));
+        const toRemove = this.shuffle(availableTiles).slice(0, 2);
+
+        toRemove.forEach((tile, i) => {
+            setTimeout(() => {
+                tile.element.classList.add('exploding');
+                setTimeout(() => {
+                    tile.matched = true;
+                    tile.element.style.visibility = 'hidden';
+                    this.pairs--;
+                    this.updateBlockedTiles();
+                    this.updateUI();
+                }, 500);
+            }, i * 300);
+        });
+
+        if (toRemove.length > 0) {
+            soundManager.play('transfer');
+            this.showMessage('💣 ¡TNT elimina ' + toRemove.length + ' fichas extra!');
+        }
+    }
+
+    showMessage(text) {
+        // Mostrar mensaje motivacional
+        let messageEl = document.querySelector('.game-message');
+        if (!messageEl) {
+            messageEl = document.createElement('div');
+            messageEl.className = 'game-message';
+            this.boardContainer.appendChild(messageEl);
+        }
+
+        messageEl.textContent = text;
+        messageEl.classList.add('visible');
+
+        setTimeout(() => {
+            messageEl.classList.remove('visible');
+        }, 2000);
     }
 
     showVictory() {

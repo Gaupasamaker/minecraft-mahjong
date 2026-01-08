@@ -403,6 +403,140 @@ body::before {
     }
 }
 
+/* ============================================
+   MECÁNICAS ESPECIALES
+   ============================================ */
+
+/* Creeper - Vibración */
+.tile.vibrating {
+    animation: vibrate 0.1s linear infinite;
+    border-color: #4CAF50 !important;
+    box-shadow: 0 0 20px rgba(76, 175, 80, 0.7) !important;
+}
+
+@keyframes vibrate {
+
+    0%,
+    100% {
+        transform: translateX(-2px);
+    }
+
+    50% {
+        transform: translateX(2px);
+    }
+}
+
+/* Timer del Creeper */
+.creeper-timer {
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(180deg, #4CAF50 0%, #2E7D32 100%);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    z-index: 200;
+    animation: pulse 0.5s ease-in-out infinite;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+.creeper-timer .timer-value {
+    display: inline-block;
+}
+
+/* Explosión */
+.tile.exploding {
+    animation: explode 0.6s ease-out forwards;
+}
+
+@keyframes explode {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    30% {
+        transform: scale(1.5);
+        background: #FF5722;
+        box-shadow: 0 0 30px #FF5722;
+    }
+
+    100% {
+        transform: scale(0);
+        opacity: 0;
+    }
+}
+
+/* Cerdo - Brillo de pista */
+.tile.hint-glow {
+    animation: hintGlow 0.5s ease-in-out infinite;
+    z-index: 150 !important;
+}
+
+@keyframes hintGlow {
+
+    0%,
+    100% {
+        box-shadow: 0 0 20px 5px #FFB6C1;
+        border-color: #FF69B4;
+    }
+
+    50% {
+        box-shadow: 0 0 40px 10px #FFB6C1;
+        border-color: #FF1493;
+    }
+}
+
+/* Mensaje del juego */
+.game-message {
+    position: fixed;
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    background: linear-gradient(180deg, #5D8C3E 0%, #3D5C28 100%);
+    color: white;
+    padding: 15px 30px;
+    border-radius: 10px;
+    font-size: 1.6rem;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    border: 3px solid #2D4420;
+    text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.3);
+}
+
+.game-message.visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Partículas de explosión (pseudo-elementos) */
+.tile.exploding::after {
+    content: '💥';
+    position: absolute;
+    font-size: 3rem;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    animation: particleBurst 0.6s ease-out forwards;
+}
+
+@keyframes particleBurst {
+    0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(0.5);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(2);
+    }
+}
+
 /* Niveles de altura (Z-index) para el 3D */
 .tile[data-z="0"] {
     z-index: 10;
